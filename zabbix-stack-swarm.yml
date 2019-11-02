@@ -8,12 +8,10 @@ services:
   volumes:
    - grafana-volumes:/var/lib/grafana
    - /home/vagrant/grafana_provisioning:/etc/grafana/provisioning
-  #depends_on:
-  # - zabbix-web-nginx-mysql 
   environment:
    - .env_grafana
   networks:
-   zbx_net_swarm:
+   #zbx_net_swarm:
    zabbix_network:
   deploy:
    update_config:
@@ -59,7 +57,7 @@ services:
    retries: 3
    start_period: 30s
   networks:
-   zbx_net_swarm:
+   #zbx_net_swarm:
    zabbix_network:
   stop_grace_period: 10s
   labels:
@@ -96,10 +94,6 @@ services:
    - /home/vagrant/zabbix_server/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
    - /home/vagrant/zabbix_server/zabbix_mibs:/var/lib/zabbix/mibs:ro
    - /home/vagrant/zabbix_server/snmptraps:/var/lib/zabbix/snmptraps:ro
-  #links:
-  # - mysql-server:mysql-server
-  #deploy:
-   #replicas: 2
   env_file:
    - .env_db_mysql
    - .env_srv
@@ -108,9 +102,6 @@ services:
    - MYSQL_PASSWORD
    - MYSQL_ROOT_PASSWORD
   user: root
-  #depends_on:
-  # - mysql-server
-  # - zabbix-snmptraps
   networks:
    #zbx_net_swarm:
    zabbix_network:
@@ -124,13 +115,14 @@ services:
   deploy:
    update_config:
     failure_action: rollback
-   replicas: 2
+   #replicas: 2
 #   placement:
 #    constraints:
 #     - 'node.role == worker'
 
  zabbix-agent:
   image: zabbix/zabbix-agent:alpine-4.2-latest
+  hostname: zabbix-agent 
   ports:
    #- "10050:10050"
    - target: 10050
@@ -189,11 +181,13 @@ services:
 
 networks:
  zbx_net_swarm:
+  name: zbx_net_swarm
   driver: overlay
   attachable: true
   external: true
 
  zabbix_network:
+  name: zabbix_network
   attachable: true
   driver_opts:
    com.docker.network.enable_ipv6: "false"
@@ -201,7 +195,7 @@ networks:
   ipam:
    driver: default
    config:
-    - subnet: 172.16.220.0/24
+    - subnet: "10.10.220.0/24"
 
 
 secrets:
