@@ -13,6 +13,9 @@ services:
   networks:
    #zbx_net_swarm:
    zabbix_network:
+  configs:
+   - source: grafana_config
+     target: /etc/grafana/grafana.ini
   deploy:
    update_config:
     failure_action: rollback
@@ -197,14 +200,17 @@ networks:
    config:
     - subnet: "10.10.220.0/24"
 
-
 secrets:
   MYSQL_USER:
     file: ./.MYSQL_USER
   MYSQL_PASSWORD:
     file: ./.MYSQL_PASSWORD
   MYSQL_ROOT_PASSWORD:
-    file: ./.MYSQL_ROOT_PASSWORD
+    file: ./.MYSQL_ROOT_PASSWORD  
+
+configs:
+  grafana_config:
+   file: ./grafana/grafana.ini
 
 volumes:
  grafana-volumes:
