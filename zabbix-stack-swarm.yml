@@ -192,7 +192,7 @@ networks:
  zbx_net_swarm:
   driver: overlay
   attachable: true
-  external: true
+  #external: true
 
  zabbix_network:
   attachable: true
