@@ -40,8 +40,17 @@ services:
  zabbix-web-nginx-mysql:
   image: zabbix/zabbix-web-nginx-mysql:alpine-4.2-latest
   ports:
-   - "80:80"
-   - "443:443"
+  # - "80:80"
+  # - "443:443"
+   - target: 80
+     published: 80
+     protocol: tcp
+     mode: host
+   - target: 443
+     published: 443
+     protocol: tcp
+     mode: host
+
   volumes:
    - /etc/localtime:/etc/localtime:ro
    - /etc/timezone:/etc/timezone:ro
@@ -60,7 +69,7 @@ services:
    retries: 3
    start_period: 30s
   networks:
-   #zbx_net_swarm:
+   zbx_net_swarm:
    zabbix_network:
   stop_grace_period: 10s
   labels:
@@ -74,9 +83,9 @@ services:
    update_config:
     failure_action: rollback
    replicas: 2
-#   placement:
-#    constraints:
-#     - 'node.role == manager'
+   #placement:
+   # constraints:
+   #  - 'node.role == worker'
 
 
  zabbix-server:
@@ -106,7 +115,6 @@ services:
    - MYSQL_ROOT_PASSWORD
   user: root
   networks:
-   #zbx_net_swarm:
    zabbix_network:
   stop_grace_period: 30s
   labels:
@@ -154,7 +162,6 @@ services:
   #    - 'node.role == worker'
   #pid: "host"
   networks:
-   #zbx_net_swarm:
    zabbix_network:
   stop_grace_period: 5s
 
@@ -173,7 +180,6 @@ services:
   user: root
   stop_grace_period: 1m
   networks:
-   #zbx_net_swarm:
    zabbix_network:
   deploy:
    update_config:
@@ -184,16 +190,12 @@ services:
 
 networks:
  zbx_net_swarm:
-  name: zbx_net_swarm
   driver: overlay
   attachable: true
   external: true
 
  zabbix_network:
-  name: zabbix_network
   attachable: true
-  driver_opts:
-   com.docker.network.enable_ipv6: "false"
   internal: true
   ipam:
    driver: default
