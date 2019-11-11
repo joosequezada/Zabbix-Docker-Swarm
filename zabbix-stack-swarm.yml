@@ -7,7 +7,9 @@ services:
    - "3000:3000"
   volumes:
    - grafana-volumes:/var/lib/grafana
-   - /home/vagrant/grafana_provisioning:/etc/grafana/provisioning
+   - grafana_provisioning:/etc/grafana/provisioning
+   #- /home/vagrant/grafana_provisioning:/etc/grafana/provisioning
+    
   environment:
    - .env_grafana
   networks:
@@ -52,9 +54,10 @@ services:
      mode: host
 
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - /home/vagrant/zabbix_nginx:/etc/ssl/nginx:ro
+   #- /etc/localtime:/etc/localtime:ro
+   #- /etc/timezone:/etc/timezone:ro
+   #- /home/vagrant/zabbix_nginx:/etc/ssl/nginx:ro
+   - zabbix_nginx:/etc/ssl/nginx:ro
   env_file:
    - .env_db_mysql
    - .env_web
@@ -97,15 +100,23 @@ services:
      protocol: tcp
      mode: host
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro 
-   - /home/vagrant/zabbix_server/zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
-   - /home/vagrant/zabbix_server/zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
-   - /home/vagrant/zabbix_server/zabbix_modules:/var/lib/zabbix/modules:ro
-   - /home/vagrant/zabbix_server/zabbix_enc:/var/lib/zabbix/enc:ro
-   - /home/vagrant/zabbix_server/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
-   - /home/vagrant/zabbix_server/zabbix_mibs:/var/lib/zabbix/mibs:ro
-   - /home/vagrant/zabbix_server/snmptraps:/var/lib/zabbix/snmptraps:ro
+   #- /etc/localtime:/etc/localtime:ro
+   #- /etc/timezone:/etc/timezone:ro 
+   #- /home/vagrant/zabbix_server/zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
+   #- /home/vagrant/zabbix_server/zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
+   #- /home/vagrant/zabbix_server/zabbix_modules:/var/lib/zabbix/modules:ro
+   #- /home/vagrant/zabbix_server/zabbix_enc:/var/lib/zabbix/enc:ro
+   #- /home/vagrant/zabbix_server/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   #- /home/vagrant/zabbix_server/zabbix_mibs:/var/lib/zabbix/mibs:ro
+   #- /home/vagrant/zabbix_server/snmptraps:/var/lib/zabbix/snmptraps:ro
+   - zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
+   - zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
+   - zabbix_modules:/var/lib/zabbix/modules:ro
+   - zabbix_enc:/var/lib/zabbix/enc:ro
+   - zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - zabbix_mibs:/var/lib/zabbix/mibs:ro
+   - snmptraps:/var/lib/zabbix/snmptraps:ro
+
   env_file:
    - .env_db_mysql
    - .env_srv
@@ -141,16 +152,16 @@ services:
      protocol: tcp
      mode: host
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - /home/vagrant/zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
-   - /home/vagrant/zabbix_modules:/var/lib/zabbix/modules:ro
-   - /home/vagrant/zabbix_enc:/var/lib/zabbix/enc:ro
-   - /home/vagrant/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
-   #- zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
-   #- zabbix_modules:/var/lib/zabbix/modules:ro
-   #- zabbix_enc:/var/lib/zabbix/enc:ro
-   #- zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+  # - /etc/localtime:/etc/localtime:ro
+  # - /etc/timezone:/etc/timezone:ro
+  # - /home/vagrant/zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
+  # - /home/vagrant/zabbix_modules:/var/lib/zabbix/modules:ro
+  # - /home/vagrant/zabbix_enc:/var/lib/zabbix/enc:ro
+  # - /home/vagrant/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
+   - zabbix_modules:/var/lib/zabbix/modules:ro
+   - zabbix_enc:/var/lib/zabbix/enc:ro
+   - zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
   env_file:
    - .env_agent
   user: root
@@ -170,7 +181,8 @@ services:
   #container_name: mysql-server
   command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin, --default-authentication-plugin=mysql_native_password]
   volumes:
-   - /home/vagrant/zbx_env/var/lib/mysql:/var/lib/mysql:rw
+   #- /home/vagrant/zbx_env/var/lib/mysql:/var/lib/mysql:rw
+   - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
   env_file:
    - .env_db_mysql
   secrets:
@@ -216,7 +228,7 @@ configs:
 
 volumes:
  grafana-volumes:
-# provisioning:
+ grafana_provisioning:
  snmptraps:
  zabbix_enc:
  zabbix_ssh_keys:
@@ -227,7 +239,7 @@ volumes:
  zabbix_mibs:
  zabbix_externalscripts:
  zabbix_alertscripts:
- timezone:
+ #timezone:
 #  driver_opts:
 #  servers: 192.168.33.10,192.168.33.11
   
