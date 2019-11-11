@@ -182,7 +182,7 @@ services:
   command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin, --default-authentication-plugin=mysql_native_password]
   volumes:
    #- /home/vagrant/zbx_env/var/lib/mysql:/var/lib/mysql:rw
-   - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
+   - zabbix_db_data:/var/lib/mysql:rw
   env_file:
    - .env_db_mysql
   secrets:
@@ -227,6 +227,7 @@ configs:
    file: ./grafana/grafana.ini
 
 volumes:
+ zabbix_db_data:
  grafana-volumes:
  grafana_provisioning:
  snmptraps:
