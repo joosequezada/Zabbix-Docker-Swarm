@@ -214,7 +214,7 @@ configs:
    file: ./grafana/grafana.ini
 
 volumes:
- zabbix_db_data:
+ zabbix_db:
  grafana-volumes:
  grafana_provisioning:
  snmptraps:
