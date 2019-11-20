@@ -7,14 +7,10 @@ services:
   volumes:
    - grafana-volumes:/var/lib/grafana
    - grafana_provisioning:/etc/grafana/provisioning
-   # - /home/vagrant/grafana_provisioning:/etc/grafana/provisioning
   environment:
    - .env_grafana
   networks:
    zabbix_network:
-  # configs:
-  #  - source: grafana_config
-  #    target: /etc/grafana/grafana.ini
   user: root
   deploy:
    update_config:
@@ -31,7 +27,6 @@ services:
   volumes:
    #- /etc/localtime:/etc/localtime:ro
    #- /etc/timezone:/etc/timezone:ro
-   #- /home/vagrant/zabbix_nginx:/etc/ssl/nginx:ro
    - zabbix_nginx:/etc/ssl/nginx:ro
   env_file:
    - .env_db_mysql
@@ -50,13 +45,6 @@ services:
    zbx_net_swarm:
    zabbix_network:
   stop_grace_period: 10s
-  labels:
-   com.zabbix.description: "Zabbix frontend on Nginx web-server with MySQL database support"
-   com.zabbix.company: "Zabbix SIA"
-   com.zabbix.component: "zabbix-frontend"
-   com.zabbix.webserver: "nginx"
-   com.zabbix.dbtype: "mysql"
-   com.zabbix.os: "alpine"
   deploy:
    update_config:
     failure_action: rollback
@@ -64,6 +52,13 @@ services:
    #placement:
    # constraints:
    #  - 'node.role == worker'
+  labels:
+   com.zabbix.description: "Zabbix frontend on Nginx web-server with MySQL database support"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "zabbix-frontend"
+   com.zabbix.webserver: "nginx"
+   com.zabbix.dbtype: "mysql"
+   com.zabbix.os: "alpine"
 
  zabbix-server:
   image: zabbix/zabbix-server-mysql:alpine-4.2-latest
@@ -76,13 +71,6 @@ services:
   volumes:
    #- /etc/localtime:/etc/localtime:ro
    #- /etc/timezone:/etc/timezone:ro 
-   # - /home/vagrant/zabbix_server/zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
-   # - /home/vagrant/zabbix_server/zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
-   # - /home/vagrant/zabbix_server/zabbix_modules:/var/lib/zabbix/modules:ro
-   # - /home/vagrant/zabbix_server/zabbix_enc:/var/lib/zabbix/enc:ro
-   # - /home/vagrant/zabbix_server/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
-   # - /home/vagrant/zabbix_server/zabbix_mibs:/var/lib/zabbix/mibs:ro
-   # - /home/vagrant/zabbix_server/snmptraps:/var/lib/zabbix/snmptraps:ro
    - zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
    - zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
    - zabbix_modules:/var/lib/zabbix/modules:ro
@@ -101,12 +89,6 @@ services:
   networks:
    zabbix_network:
   stop_grace_period: 30s
-  labels:
-   com.zabbix.description: "Zabbix server with MySQL database support"
-   com.zabbix.company: "Zabbix SIA"
-   com.zabbix.component: "zabbix-server"
-   com.zabbix.dbtype: "mysql"
-   com.zabbix.os: "alpine"
   deploy:
    update_config:
     failure_action: rollback
@@ -114,6 +96,12 @@ services:
 #   placement:
 #    constraints:
 #     - 'node.role == worker'
+  labels:
+   com.zabbix.description: "Zabbix server with MySQL database support"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "zabbix-server"
+   com.zabbix.dbtype: "mysql"
+   com.zabbix.os: "alpine"
 
  zabbix-agent:
   image: zabbix/zabbix-agent:alpine-4.2-latest
@@ -127,10 +115,6 @@ services:
   volumes:
   # - /etc/localtime:/etc/localtime:ro
   # - /etc/timezone:/etc/timezone:ro
-  # - /home/vagrant/zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
-  # - /home/vagrant/zabbix_modules:/var/lib/zabbix/modules:ro
-  # - /home/vagrant/zabbix_enc:/var/lib/zabbix/enc:ro
-  # - /home/vagrant/zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
    - zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
    - zabbix_modules:/var/lib/zabbix/modules:ro
    - zabbix_enc:/var/lib/zabbix/enc:ro
@@ -153,7 +137,6 @@ services:
   image: mysql:8.0
   command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin, --default-authentication-plugin=mysql_native_password]
   volumes:
-   #- /home/vagrant/zbx_env/var/lib/mysql:/var/lib/mysql:rw
    - zabbix_db:/var/lib/mysql:rw
   env_file:
    - .env_db_mysql
