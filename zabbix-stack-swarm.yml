@@ -31,8 +31,8 @@ services:
   volumes:
    #- /etc/localtime:/etc/localtime:ro
    #- /etc/timezone:/etc/timezone:ro
-   - /home/vagrant/zabbix_nginx:/etc/ssl/nginx:ro
-   #- zabbix_nginx:/etc/ssl/nginx:ro
+   #- /home/vagrant/zabbix_nginx:/etc/ssl/nginx:ro
+   - zabbix_nginx:/etc/ssl/nginx:ro
   env_file:
    - .env_db_mysql
    - .env_web
