@@ -1,0 +1,212 @@
+version: "3.6"
+services:
+ grafana:
+  image: jquezada/grafana-zabbix:v1
+  ports:
+   - "3000:3000"
+  volumes:
+   - grafana-volumes:/var/lib/grafana
+   - grafana_provisioning:/etc/grafana/provisioning
+  environment:
+   - .env_grafana
+  networks:
+   zabbix_network:
+  user: root
+  deploy:
+   update_config:
+    failure_action: rollback
+   placement:
+    constraints:
+     - 'node.role == manager'
+
+ zabbix-web-nginx-pgsql:
+  image: zabbix/zabbix-web-nginx-pgsql:alpine-4.2-latest
+  ports:
+  - "80:80"
+  - "443:443"
+  volumes:
+   #- /etc/localtime:/etc/localtime:ro
+   #- /etc/timezone:/etc/timezone:ro
+   - zabbix_nginx:/etc/ssl/nginx:ro
+  env_file:
+   - .env_db_pgsql
+   - .env_web
+  secrets:
+   - POSTGRES_USER
+   - POSTGRES_PASSWORD
+  user: root
+  healthcheck:
+   test: ["CMD", "curl", "-f", "http://localhost"]
+   interval: 10s
+   timeout: 5s
+   retries: 3
+   start_period: 30s
+  networks:
+   zbx_net_swarm:
+   zabbix_network:
+  stop_grace_period: 10s
+  deploy:
+   update_config:
+    failure_action: rollback
+   replicas: 2
+   #placement:
+   # constraints:
+   #  - 'node.role == worker'
+  labels:
+   com.zabbix.description: "Zabbix frontend on Nginx web-server with PgSQL database support"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "zabbix-frontend"
+   com.zabbix.webserver: "nginx"
+   com.zabbix.dbtype: "pgsql"
+   com.zabbix.os: "alpine"
+
+ zabbix-server:
+  image: zabbix/zabbix-server-pgsql:alpine-4.2-latest
+  ports:
+  # - "10051:10051"
+   - target: 10051
+     published: 10051
+     protocol: tcp
+     mode: host
+  volumes:
+   #- /etc/localtime:/etc/localtime:ro
+   #- /etc/timezone:/etc/timezone:ro 
+   - zabbix_alertscripts:/usr/lib/zabbix/alertscripts:ro
+   - zabbix_externalscripts:/usr/lib/zabbix/externalscripts:ro
+   - zabbix_modules:/var/lib/zabbix/modules:ro
+   - zabbix_enc:/var/lib/zabbix/enc:ro
+   - zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - zabbix_mibs:/var/lib/zabbix/mibs:ro
+   - snmptraps:/var/lib/zabbix/snmptraps:ro
+  env_file:
+   - .env_db_pgsql
+   - .env_srv
+  secrets:
+   - POSTGRES_USER
+   - POSTGRES_PASSWORD
+   - POSTGRES_ROOT_PASSWORD
+  user: root
+  networks:
+   zabbix_network:
+  stop_grace_period: 30s
+  deploy:
+   update_config:
+    failure_action: rollback
+   #replicas: 2
+#   placement:
+#    constraints:
+#     - 'node.role == worker'
+  labels:
+   com.zabbix.description: "Zabbix server with PgSQL database support"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "zabbix-server"
+   com.zabbix.dbtype: "pgsql"
+   com.zabbix.os: "alpine"
+
+ zabbix-agent:
+  image: zabbix/zabbix-agent:alpine-4.2-latest
+  hostname: zabbix-agent 
+  ports:
+   #- "10050:10050"
+   - target: 10050
+     published: 10050
+     protocol: tcp
+     mode: host
+  volumes:
+  # - /etc/localtime:/etc/localtime:ro
+  # - /etc/timezone:/etc/timezone:ro
+   - zabbix_agentd:/etc/zabbix/zabbix_agentd.d:ro
+   - zabbix_modules:/var/lib/zabbix/modules:ro
+   - zabbix_enc:/var/lib/zabbix/enc:ro
+   - zabbix_ssh_keys:/var/lib/zabbix/ssh_keys:ro
+  env_file:
+   - .env_agent
+  user: root
+  #privileged: true
+  deploy:
+   mode: global
+  # placement:
+  #  constraints:
+  #    - 'node.role == worker'
+  #pid: "host"
+  networks:
+   zabbix_network:
+  stop_grace_period: 5s
+
+ postgres-server:
+  image: timescale/timescaledb:latest
+  volumes:
+   - /home/vagrant/postgresql/data:/var/lib/postgresql/data:rw
+  env_file:
+   - .env_db_pgsql
+  secrets:
+   - POSTGRES_USER
+   - POSTGRES_PASSWORD
+   - POSTGRES_ROOT_PASSWORD
+  user: root
+  stop_grace_period: 1m
+  networks:
+   zabbix_network:
+  deploy:
+   update_config:
+    failure_action: rollback
+   placement:
+    constraints:
+     - 'node.role == manager'
+
+ visualizer:
+  image: dockersamples/visualizer:stable
+  ports:
+   - "8001:8080"
+  stop_grace_period: 1m30s
+  volumes:
+   - "/var/run/docker.sock:/var/run/docker.sock"
+  deploy:
+   update_config:
+    failure_action: rollback
+   placement:
+    constraints:
+     - 'node.role == manager'
+
+networks:
+ zbx_net_swarm:
+  driver: overlay
+  attachable: true
+  #external: true
+
+ zabbix_network:
+  attachable: true
+  #external: true
+  internal: true
+  ipam:
+   driver: default
+   config:
+    - subnet: "10.10.210.0/24"
+
+secrets:
+  POSTGRES_USER:
+    file: ./.POSTGRES_USER
+  POSTGRES_PASSWORD:
+    file: ./.POSTGRES_PASSWORD
+  POSTGRES_ROOT_PASSWORD:
+    file: ./.POSTGRES_ROOT_PASSWORD  
+
+configs:
+  grafana_config:
+   file: ./grafana/grafana.ini
+
+volumes:
+ zabbix_db:
+ grafana-volumes:
+ grafana_provisioning:
+ snmptraps:
+ zabbix_enc:
+ zabbix_ssh_keys:
+ zabbix_modules: 
+ zabbix_agentd:
+ zabbix:
+ zabbix_nginx:
+ zabbix_mibs:
+ zabbix_externalscripts:
+ zabbix_alertscripts:
+  
