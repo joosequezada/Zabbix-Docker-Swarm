@@ -136,7 +136,7 @@ services:
  postgres-server:
   image: timescale/timescaledb:latest
   volumes:
-   - /home/vagrant/postgresql/data:/var/lib/postgresql/data:rw
+   - zabbix_db:/var/lib/postgresql/data:rw
   env_file:
    - .env_db_pgsql
   secrets:
